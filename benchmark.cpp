@@ -34,7 +34,7 @@ public:
 
     durations.push_back(ms);
 
-    std::cout << ms << "ms\n";
+    // std::cout << ms << "ms\n";
   }
 
 private:

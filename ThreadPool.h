@@ -14,6 +14,9 @@
 class ThreadPool {
 public:
   void Start();
+  void Stop();
+  bool busy();
+
   template <class F, class... Args>
   auto QueueJob(F &&f, Args &&...args)
       -> std::future<typename std::invoke_result<F, Args...>::type> {
@@ -30,8 +33,6 @@ public:
     mutex_condition.notify_one();
     return res;
   }
-  void Stop();
-  bool busy();
 
 private:
   void ThreadLoop();
