@@ -80,7 +80,7 @@ void ParallelSort(std::vector<int> &values, ThreadPool &pool,
 int main() {
   unsigned int numTests = 500;
   unsigned int maxthreads{std::thread::hardware_concurrency()};
-  unsigned int exponent{6};
+  unsigned int exponent{2};
   std::vector<int> values;
 
   std::vector<double> threadsDurations;
@@ -119,16 +119,23 @@ int main() {
   }
 
   double averageThreads = average(threadsDurations);
-  double averageStanard = average(serialDurations);
+  double averageStandard = average(serialDurations);
 
   std::cout << "Thread pool took an average of: " << averageThreads << " ms\n";
-  std::cout << "Standard took an average of: " << averageStanard << " ms\n";
+  std::cout << "Standard took an average of: " << averageStandard << " ms\n";
 
   std::cout << "Number of tests: " << numTests << std::endl;
 
-  if (averageThreads > averageStanard) {
+  if (averageThreads < averageStandard) {
     std::cout << "Thread Pool won!" << std::endl;
-    std::cout << "It was " << ;
+    std::cout << "It was " << (averageStandard / averageThreads * 100) - 100
+              << "% faster!" << std::endl;
+  }
+
+  if (averageThreads > averageStandard) {
+    std::cout << "Standard won!" << std::endl;
+    std::cout << "It was " << (averageThreads / averageStandard * 100) - 100
+              << "% faster!" << std::endl;
   }
 }
 
