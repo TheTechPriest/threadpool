@@ -13,7 +13,7 @@ void GenerateRandomVector(std::vector<int> &generated, int length) {
   // std::cout << "Generating vector of length: " << length << '\n';
 }
 
-int partition(std::vector<int> &values, int low, int high) {
+int Partition(std::vector<int> &values, int low, int high) {
   int pivot = values[high];
 
   int i = low - 1;
@@ -30,17 +30,17 @@ int partition(std::vector<int> &values, int low, int high) {
   return (i + 1);
 }
 
-void quicksort(std::vector<int> &values, int low, int high) {
+void Quicksort(std::vector<int> &values, int low, int high) {
 
   if (low < high) {
-    int index = partition(values, low, high);
+    int index = Partition(values, low, high);
 
-    quicksort(values, low, index - 1);
-    quicksort(values, index + 1, high);
+    Quicksort(values, low, index - 1);
+    Quicksort(values, index + 1, high);
   }
 }
 
-double average(std::vector<double> values) {
+double Average(std::vector<double> values) {
   double sum{0};
 
   std::for_each(values.begin(), values.end(), [&sum](double i) { sum += i; }
@@ -63,7 +63,7 @@ void ParallelSort(std::vector<int> &values, ThreadPool &pool,
         (i == num_cores - 1) ? values.size() - 1 : (left + chunk_size - 1);
 
     futures.push_back(pool.QueueJob(
-        [&values, left, right] { quicksort(values, left, right); }));
+        [&values, left, right] { Quicksort(values, left, right); }));
   }
 
   for (auto &fut : futures) {
@@ -78,33 +78,27 @@ void ParallelSort(std::vector<int> &values, ThreadPool &pool,
 }
 
 int main() {
-  unsigned int numTests = 500;
+  unsigned int numTests = 20000;
   unsigned int maxthreads{std::thread::hardware_concurrency()};
-  unsigned int exponent{2};
-  std::vector<int> values;
-
+  unsigned int exponent{4};
+  std::vector<int> master;
   std::vector<double> threadsDurations;
   std::vector<double> serialDurations;
 
-  GenerateRandomVector(values, pow(maxthreads, exponent));
+  std::cout << "Starting " << numTests
+            << " tests. Vectors will be of size: " << pow(maxthreads, exponent)
+            << '\n';
 
-  // std::vector<double> average_test = {1, 5};
+  GenerateRandomVector(master, pow(maxthreads, exponent));
 
-  // std::cout << "Average value of vector is: " << average(average_test) <<
-  // '\n';
-
-  // for (auto i : values) {
-  //   std::cout << i << " ";
-  // }
-
-  // std::cout << std::endl;
+  std::vector<int> values{master};
 
   ThreadPool pool;
 
   pool.Start();
 
   for (unsigned int i = 0; i < numTests; ++i) {
-    GenerateRandomVector(values, pow(maxthreads, exponent));
+    values = master;
     ParallelSort(values, pool, threadsDurations);
   }
 
@@ -112,14 +106,14 @@ int main() {
 
   for (unsigned i = 0; i < numTests; ++i) {
     {
-      GenerateRandomVector(values, pow(maxthreads, exponent));
+      values = master;
       Timer timer(serialDurations);
-      quicksort(values, 0, values.size() - 1);
+      Quicksort(values, 0, values.size() - 1);
     }
   }
 
-  double averageThreads = average(threadsDurations);
-  double averageStandard = average(serialDurations);
+  double averageThreads = Average(threadsDurations);
+  double averageStandard = Average(serialDurations);
 
   std::cout << "Thread pool took an average of: " << averageThreads << " ms\n";
   std::cout << "Standard took an average of: " << averageStandard << " ms\n";
